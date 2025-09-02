@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FirmaFlow - Zarządzaj swoją firmą</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Ładujemy bibliotekę Supabase z CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div id="auth-section">
+        <h2>Zaloguj się lub Zarejestruj</h2>
+        <form id="auth-form">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Hasło" required>
+            <button type="submit">Zaloguj / Zarejestruj</button>
+        </form>
+        <div id="auth-message"></div>
+    </div>
+
+    <div id="app-section" class="hidden">
+        <header>
+            <h1>FirmaFlow</h1>
+            <button id="logout-button">Wyloguj</button>
+        </header>
+
+        <main>
+            <div class="column">
+                <h2>Dodaj Klienta</h2>
+                <form id="client-form">
+                    <input type="text" id="client-name" placeholder="Nazwa klienta" required>
+                    <input type="email" id="client-email" placeholder="Email klienta" required>
+                    <input type="text" id="client-phone" placeholder="Telefon">
+                    <button type="submit">Dodaj Klienta</button>
+                </form>
+
+                <h2>Klienci</h2>
+                <ul id="clients-list"></ul>
+            </div>
+
+            <div class="column">
+                <h2>Dodaj Zlecenie</h2>
+                <form id="order-form">
+                    <input type="text" id="order-title" placeholder="Tytuł zlecenia" required>
+                    <select id="order-client" required></select>
+                    <input type="number" id="order-value" placeholder="Wartość (PLN)">
+                    <button type="submit">Dodaj Zlecenie</button>
+                </form>
+
+                <h2>Aktywne Zlecenia</h2>
+                <ul id="orders-list"></ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Nasze skrypty JavaScript -->
+    <script type="module" src="supabaseClient.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
