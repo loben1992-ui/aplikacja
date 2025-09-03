@@ -7,11 +7,15 @@
     <link rel="stylesheet" href="style.css">
     <!-- Ładujemy bibliotekę Supabase z CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Ładujemy bibliotekę kalendarza FullCalendar z CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 </head>
 <body>
 
+    <!-- === SEKCJA LOGOWANIA === -->
     <div id="auth-section">
-        <h2>Zaloguj się lub Zarejestruj</h2>
+        <h2>Witaj w FirmaFlow</h2>
+        <p>Zaloguj się lub zarejestruj, aby kontynuować</p>
         <form id="auth-form">
             <input type="email" id="email" placeholder="Email" required>
             <input type="password" id="password" placeholder="Hasło" required>
@@ -20,39 +24,127 @@
         <div id="auth-message"></div>
     </div>
 
+    <!-- === GŁÓWNA APLIKACJA (WIDOCZNA PO ZALOGOWANIU) === -->
     <div id="app-section" class="hidden">
         <header>
             <h1>FirmaFlow</h1>
+            <nav>
+                <a href="#clients-section">Klienci</a>
+                <a href="#orders-section">Zlecenia</a>
+                <a href="#calendar-section">Kalendarz</a>
+                <a href="#reports-section">Raporty</a>
+            </nav>
             <button id="logout-button">Wyloguj</button>
         </header>
 
         <main>
-            <div class="column">
-                <h2>Dodaj Klienta</h2>
-                <form id="client-form">
-                    <input type="text" id="client-name" placeholder="Nazwa klienta" required>
-                    <input type="email" id="client-email" placeholder="Email klienta" required>
-                    <input type="text" id="client-phone" placeholder="Telefon">
-                    <button type="submit">Dodaj Klienta</button>
-                </form>
+            <!-- === SEKCJA KLIENTÓW === -->
+            <section id="clients-section">
+                <div class="column form-column">
+                    <h2 id="client-form-title">Dodaj Nowego Klienta</h2>
+                    <form id="client-form">
+                        <input type="hidden" id="client-id" name="id">
+                        <input type="text" id="client-name" name="name" placeholder="Nazwa klienta" required>
+                        <input type="email" id="client-email" name="email" placeholder="Email klienta" required>
+                        <input type="text" id="client-phone" name="phone" placeholder="Telefon">
+                        <input type="text" id="client-nip" name="nip" placeholder="NIP">
+                        <button type="submit" id="client-submit-button">Dodaj Klienta</button>
+                        <button type="button" id="client-cancel-button" class="hidden">Anuluj edycję</button>
+                    </form>
+                </div>
+                <div class="column list-column">
+                    <h2>Lista Klientów</h2>
+                    <input type="search" id="search-client" placeholder="Szukaj klienta...">
+                    <ul id="clients-list"></ul>
+                </div>
+            </section>
+            
+            <!-- === SEKCJA ZLECEŃ === -->
+            <section id="orders-section">
+                 <div class="column form-column">
+                    <h2 id="order-form-title">Dodaj Nowe Zlecenie</h2>
+                    <form id="order-form">
+                        <input type="hidden" id="order-id" name="id">
+                        <input type="text" id="order-title" name="title" placeholder="Tytuł zlecenia" required>
+                        <select id="order-client" name="client_id" required></select>
+                        <input type="number" step="0.01" id="order-value" name="value" placeholder="Wartość (PLN)">
+                        <input type="date" id="order-deadline" name="deadline" placeholder="Termin realizacji">
+                        <select id="order-status" name="status">
+                            <option>Nowe</option>
+                            <option>W trakcie</option>
+                            <option>Zakończone</option>
+                            <option>Anulowane</option>
+                        </select>
+                        <button type="submit" id="order-submit-button">Dodaj Zlecenie</button>
+                        <button type="button" id="order-cancel-button" class="hidden">Anuluj edycję</button>
+                    </form>
+                </div>
+                <div class="column list-column">
+                    <h2>Lista Zleceń</h2>
+                    <ul id="orders-list"></ul>
+                </div>
+            </section>
 
-                <h2>Klienci</h2>
-                <ul id="clients-list"></ul>
-            </div>
+            <!-- === SEKCJA KALENDARZA === -->
+            <section id="calendar-section" class="full-width-section">
+                <h2>Kalendarz Terminów</h2>
+                <div id="calendar"></div>
+            </section>
 
-            <div class="column">
-                <h2>Dodaj Zlecenie</h2>
-                <form id="order-form">
-                    <input type="text" id="order-title" placeholder="Tytuł zlecenia" required>
-                    <select id="order-client" required></select>
-                    <input type="number" id="order-value" placeholder="Wartość (PLN)">
-                    <button type="submit">Dodaj Zlecenie</button>
-                </form>
-
-                <h2>Aktywne Zlecenia</h2>
-                <ul id="orders-list"></ul>
-            </div>
+            <!-- === SEKCJA RAPORTÓW === -->
+            <section id="reports-section" class="full-width-section">
+                <h2>Raporty i Statystyki</h2>
+                <div id="stats-container">
+                    <div class="stat-card">
+                        <h3>Całkowity Przychód</h3>
+                        <p id="total-revenue">0.00 PLN</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Liczba Klientów</h3>
+                        <p id="total-clients">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Zakończone Zlecenia</h3>
+                        <p id="completed-orders">0</p>
+                    </div>
+                </div>
+            </section>
         </main>
+    </div>
+
+    <!-- === OKNO MODALNE (SZCZEGÓŁY) === -->
+    <div id="details-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close-button">&times;</button>
+            <div id="modal-grid">
+                <!-- Kolumna 1: Główne informacje -->
+                <div id="modal-main-info">
+                    <h2 id="modal-title">Szczegóły</h2>
+                    <div id="modal-body"></div>
+                </div>
+                <!-- Kolumna 2: Zadania i załączniki -->
+                <div id="modal-sub-info">
+                    <!-- Sekcja zadań (checklista) -->
+                    <div id="modal-tasks-section">
+                        <h3>Zadania do wykonania</h3>
+                        <ul id="modal-tasks-list"></ul>
+                        <form id="add-task-form">
+                            <input type="text" id="new-task-description" placeholder="Dodaj nowe zadanie..." required>
+                            <button type="submit">Dodaj</button>
+                        </form>
+                    </div>
+                    <!-- Sekcja załączników -->
+                    <div id="modal-attachments-section">
+                        <h3>Załączniki</h3>
+                        <ul id="modal-attachments-list"></ul>
+                        <form id="upload-attachment-form">
+                            <input type="file" id="new-attachment-file" required>
+                            <button type="submit">Wgraj plik</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Nasze skrypty JavaScript -->
