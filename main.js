@@ -81,26 +81,26 @@ async function fetchAndDisplayOrders() {
 
 async function handleFormSubmit(e) {
     e.preventDefault();
-    const form = e.target; // Pobieramy cały element formularza
+    const form = e.target;
     const isClientForm = form.id === 'client-form';
     const tableName = isClientForm ? 'clients' : 'orders';
-    
+
     const formData = new FormData(form);
     const data = {};
     for (const [key, value] of formData.entries()) {
-        // Dodaj tylko niepuste pola, aby uniknąć problemów z 'null'
         if (value) {
             data[key] = value;
         }
     }
-    delete data.id; // Usuwamy pole id, jeśli jest puste
+    delete data.id;
 
-    // Sprawdź, czy client_id jest wybrany przy dodawaniu zlecenia
-    if (!isClientForm && !data.client_id) {
+    // POPRAWIONA LOGIKA: Sprawdzamy to zabezpieczenie TYLKO dla formularza zleceń
+    if (form.id === 'order-form' && !data.client_id) {
         alert("Proszę wybrać klienta dla zlecenia!");
-        return; // Zatrzymaj funkcję, jeśli klient nie jest wybrany
+        return; // Zatrzymaj funkcję
     }
 
+    // Reszta funkcji pozostaje bez zmian
     if (editState.isEditing && editState.type === (isClientForm ? 'client' : 'order')) {
         const { error } = await supabase.from(tableName).update(data).eq('id', editState.id);
         if (error) {
@@ -115,7 +115,7 @@ async function handleFormSubmit(e) {
         }
     }
 
-    resetForm(form.id); // Używamy form.id, co jest pewniejsze
+    resetForm(form.id);
     await (isClientForm ? fetchAndDisplayClients() : fetchAndDisplayOrders());
     await refreshCalendarAndReports();
 }
