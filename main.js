@@ -93,30 +93,29 @@ async function handleFormSubmit(e) {
     }
     delete data.id;
 
+    // Linia-detektyw: Sprawdzamy, co dokładnie wysyłamy
+    console.log(`Dane do wysłania do tabeli '${tableName}':`, data); 
+
     if (formId === 'order-form' && !data.client_id) {
         alert("Proszę wybrać klienta dla zlecenia!");
-        return; // Zakończ działanie funkcji
+        return;
     }
 
     let error;
     if (editState.isEditing && editState.type === (isClientForm ? 'client' : 'order')) {
-        // Tryb edycji
         const { error: updateError } = await supabase.from(tableName).update(data).eq('id', editState.id);
         error = updateError;
     } else {
-        // Tryb dodawania
         const { error: insertError } = await supabase.from(tableName).insert(data);
         error = insertError;
     }
 
-    // POPRAWIONA LOGIKA: Sprawdzamy, czy wystąpił błąd
     if (error) {
         console.error(`Błąd operacji na '${tableName}':`, error);
         alert(`Błąd: ${error.message}`);
-        return; // **WAŻNE: Zakończ działanie funkcji, jeśli był błąd!**
+        return;
     }
     
-    // Ta część wykona się tylko, jeśli NIE było błędu
     resetForm(formId);
     await (isClientForm ? fetchAndDisplayClients() : fetchAndDisplayOrders());
     await refreshCalendarAndReports();
