@@ -10,4 +10,5 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 // Jeśli zmienne nie są dostępne (np. lokalnie bez konfiguracji), użyj pustych wartości.
 // Aplikacja po prostu nie połączy się z bazą.
-export const supabase = supabase.createClient(supabaseUrl || "", supabaseKey || "");
+//export const supabase = supabase.createClient(supabaseUrl || "", supabaseKey || "");
+export const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
