@@ -149,16 +149,16 @@ async function handleEdit(id, type) {
 
     if (type === 'client') {
         document.getElementById('client-form-title').textContent = 'Edytuj Klienta';
-        document.getElementById('client-id').value = data.id;
+        document.getElementById('client-id').value = data.id; // WAŻNE: Ustawiamy ukryte ID
         document.getElementById('client-name').value = data.name || '';
         document.getElementById('client-email').value = data.email || '';
         document.getElementById('client-phone').value = data.phone || '';
         document.getElementById('client-nip').value = data.nip || '';
         document.getElementById('client-submit-button').textContent = 'Zapisz zmiany';
         document.getElementById('client-cancel-button').classList.remove('hidden');
-    } else {
+    } else { // type === 'order'
         document.getElementById('order-form-title').textContent = 'Edytuj Zlecenie';
-        document.getElementById('order-id').value = data.id;
+        document.getElementById('order-id').value = data.id; // WAŻNE: Ustawiamy ukryte ID
         document.getElementById('order-title').value = data.title || '';
         document.getElementById('order-client').value = data.client_id || '';
         document.getElementById('order-value').value = data.value || '';
