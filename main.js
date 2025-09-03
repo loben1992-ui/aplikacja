@@ -81,27 +81,41 @@ async function fetchAndDisplayOrders() {
 
 async function handleFormSubmit(e) {
     e.preventDefault();
-    const form = e.target;
-    const formId = form.id;
-    const isClientForm = formId === 'client-form';
+    const form = e.target; // Pobieramy cały element formularza
+    const isClientForm = form.id === 'client-form';
     const tableName = isClientForm ? 'clients' : 'orders';
     
     const formData = new FormData(form);
     const data = {};
     for (const [key, value] of formData.entries()) {
-        if (value) data[key] = value; // Dodaj tylko niepuste pola
+        // Dodaj tylko niepuste pola, aby uniknąć problemów z 'null'
+        if (value) {
+            data[key] = value;
+        }
     }
-    delete data.id;
+    delete data.id; // Usuwamy pole id, jeśli jest puste
+
+    // Sprawdź, czy client_id jest wybrany przy dodawaniu zlecenia
+    if (!isClientForm && !data.client_id) {
+        alert("Proszę wybrać klienta dla zlecenia!");
+        return; // Zatrzymaj funkcję, jeśli klient nie jest wybrany
+    }
 
     if (editState.isEditing && editState.type === (isClientForm ? 'client' : 'order')) {
         const { error } = await supabase.from(tableName).update(data).eq('id', editState.id);
-        if (error) alert('Błąd aktualizacji: ' + error.message);
+        if (error) {
+            console.error('Błąd aktualizacji:', error);
+            alert('Błąd aktualizacji: ' + error.message);
+        }
     } else {
         const { error } = await supabase.from(tableName).insert(data);
-        if (error) alert('Błąd dodawania: ' + error.message);
+        if (error) {
+            console.error('Błąd dodawania:', error);
+            alert('Błąd dodawania: ' + error.message);
+        }
     }
 
-    resetForm(formId);
+    resetForm(form.id); // Używamy form.id, co jest pewniejsze
     await (isClientForm ? fetchAndDisplayClients() : fetchAndDisplayOrders());
     await refreshCalendarAndReports();
 }
