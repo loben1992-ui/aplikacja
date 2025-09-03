@@ -86,15 +86,32 @@ async function handleFormSubmit(e) {
     const isClientForm = formId === 'client-form';
     const tableName = isClientForm ? 'clients' : 'orders';
 
-    const formData = new FormData(form);
+    // === NOWA, RĘCZNA LOGIKA ZBIERANIA DANYCH ===
     const data = {};
-    for (const [key, value] of formData.entries()) {
-        if (value) data[key] = value;
+    if (isClientForm) {
+        // Zbieramy dane TYLKO z formularza klienta
+        data.name = document.getElementById('client-name').value;
+        data.email = document.getElementById('client-email').value;
+        data.phone = document.getElementById('client-phone').value;
+        data.nip = document.getElementById('client-nip').value;
+    } else {
+        // Zbieramy dane TYLKO z formularza zlecenia
+        data.title = document.getElementById('order-title').value;
+        data.client_id = document.getElementById('order-client').value;
+        data.value = document.getElementById('order-value').value;
+        data.deadline = document.getElementById('order-deadline').value;
+        data.status = document.getElementById('order-status').value;
     }
-    delete data.id;
+    
+    // Usuwamy puste klucze, żeby nie wysyłać ich do bazy
+    Object.keys(data).forEach(key => {
+        if (!data[key]) {
+            delete data[key];
+        }
+    });
+    // ===============================================
 
-    // Linia-detektyw: Sprawdzamy, co dokładnie wysyłamy
-    console.log(`Dane do wysłania do tabeli '${tableName}':`, data); 
+    console.log(`Dane do wysłania do tabeli '${tableName}':`, data);
 
     if (formId === 'order-form' && !data.client_id) {
         alert("Proszę wybrać klienta dla zlecenia!");
