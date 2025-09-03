@@ -86,16 +86,14 @@ async function handleFormSubmit(e) {
     const isClientForm = formId === 'client-form';
     const tableName = isClientForm ? 'clients' : 'orders';
 
-    // === NOWA, RĘCZNA LOGIKA ZBIERANIA DANYCH ===
+    // Ręczne zbieranie danych - odporne na błędy HTML
     const data = {};
     if (isClientForm) {
-        // Zbieramy dane TYLKO z formularza klienta
         data.name = document.getElementById('client-name').value;
         data.email = document.getElementById('client-email').value;
         data.phone = document.getElementById('client-phone').value;
         data.nip = document.getElementById('client-nip').value;
     } else {
-        // Zbieramy dane TYLKO z formularza zlecenia
         data.title = document.getElementById('order-title').value;
         data.client_id = document.getElementById('order-client').value;
         data.value = document.getElementById('order-value').value;
@@ -103,13 +101,8 @@ async function handleFormSubmit(e) {
         data.status = document.getElementById('order-status').value;
     }
     
-    // Usuwamy puste klucze, żeby nie wysyłać ich do bazy
-    Object.keys(data).forEach(key => {
-        if (!data[key]) {
-            delete data[key];
-        }
-    });
-    // ===============================================
+    // Usuń puste klucze
+    Object.keys(data).forEach(key => { if (!data[key]) { delete data[key]; } });
 
     console.log(`Dane do wysłania do tabeli '${tableName}':`, data);
 
@@ -120,7 +113,8 @@ async function handleFormSubmit(e) {
 
     let error;
     if (editState.isEditing && editState.type === (isClientForm ? 'client' : 'order')) {
-        const { error: updateError } = await supabase.from(tableName).update(data).eq('id', editState.id);
+        const idToUpdate = isClientForm ? document.getElementById('client-id').value : document.getElementById('order-id').value;
+        const { error: updateError } = await supabase.from(tableName).update(data).eq('id', idToUpdate);
         error = updateError;
     } else {
         const { error: insertError } = await supabase.from(tableName).insert(data);
