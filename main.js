@@ -86,7 +86,7 @@ async function handleFormSubmit(e) {
     const isClientForm = formId === 'client-form';
     const tableName = isClientForm ? 'clients' : 'orders';
 
-    // Ręczne zbieranie danych - odporne na błędy HTML
+    // Ręczne zbieranie danych - działa dla dodawania i edycji
     const data = {};
     if (isClientForm) {
         data.name = document.getElementById('client-name').value;
@@ -101,7 +101,6 @@ async function handleFormSubmit(e) {
         data.status = document.getElementById('order-status').value;
     }
     
-    // Usuń puste klucze
     Object.keys(data).forEach(key => { if (!data[key]) { delete data[key]; } });
 
     console.log(`Dane do wysłania do tabeli '${tableName}':`, data);
@@ -113,8 +112,8 @@ async function handleFormSubmit(e) {
 
     let error;
     if (editState.isEditing && editState.type === (isClientForm ? 'client' : 'order')) {
-        const idToUpdate = isClientForm ? document.getElementById('client-id').value : document.getElementById('order-id').value;
-        const { error: updateError } = await supabase.from(tableName).update(data).eq('id', idToUpdate);
+        // Używamy `editState.id`, które jest pewnym źródłem ID rekordu do aktualizacji
+        const { error: updateError } = await supabase.from(tableName).update(data).eq('id', editState.id);
         error = updateError;
     } else {
         const { error: insertError } = await supabase.from(tableName).insert(data);
@@ -131,7 +130,6 @@ async function handleFormSubmit(e) {
     await (isClientForm ? fetchAndDisplayClients() : fetchAndDisplayOrders());
     await refreshCalendarAndReports();
 }
-
 async function handleDelete(id, type) {
     if (!confirm('Czy na pewno chcesz usunąć ten element?')) return;
     const tableName = type === 'client' ? 'clients' : 'orders';
