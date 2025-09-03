@@ -82,40 +82,42 @@ async function fetchAndDisplayOrders() {
 async function handleFormSubmit(e) {
     e.preventDefault();
     const form = e.target;
-    const isClientForm = form.id === 'client-form';
+    const formId = form.id;
+    const isClientForm = formId === 'client-form';
     const tableName = isClientForm ? 'clients' : 'orders';
 
     const formData = new FormData(form);
     const data = {};
     for (const [key, value] of formData.entries()) {
-        if (value) {
-            data[key] = value;
-        }
+        if (value) data[key] = value;
     }
     delete data.id;
 
-    // POPRAWIONA LOGIKA: Sprawdzamy to zabezpieczenie TYLKO dla formularza zleceń
-    if (form.id === 'order-form' && !data.client_id) {
+    if (formId === 'order-form' && !data.client_id) {
         alert("Proszę wybrać klienta dla zlecenia!");
-        return; // Zatrzymaj funkcję
+        return; // Zakończ działanie funkcji
     }
 
-    // Reszta funkcji pozostaje bez zmian
+    let error;
     if (editState.isEditing && editState.type === (isClientForm ? 'client' : 'order')) {
-        const { error } = await supabase.from(tableName).update(data).eq('id', editState.id);
-        if (error) {
-            console.error('Błąd aktualizacji:', error);
-            alert('Błąd aktualizacji: ' + error.message);
-        }
+        // Tryb edycji
+        const { error: updateError } = await supabase.from(tableName).update(data).eq('id', editState.id);
+        error = updateError;
     } else {
-        const { error } = await supabase.from(tableName).insert(data);
-        if (error) {
-            console.error('Błąd dodawania:', error);
-            alert('Błąd dodawania: ' + error.message);
-        }
+        // Tryb dodawania
+        const { error: insertError } = await supabase.from(tableName).insert(data);
+        error = insertError;
     }
 
-    resetForm(form.id);
+    // POPRAWIONA LOGIKA: Sprawdzamy, czy wystąpił błąd
+    if (error) {
+        console.error(`Błąd operacji na '${tableName}':`, error);
+        alert(`Błąd: ${error.message}`);
+        return; // **WAŻNE: Zakończ działanie funkcji, jeśli był błąd!**
+    }
+    
+    // Ta część wykona się tylko, jeśli NIE było błędu
+    resetForm(formId);
     await (isClientForm ? fetchAndDisplayClients() : fetchAndDisplayOrders());
     await refreshCalendarAndReports();
 }
